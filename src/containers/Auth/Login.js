@@ -6,6 +6,7 @@ import * as actions from "../../store/actions";
 
 import './Login.scss';
 import { FormattedMessage } from 'react-intl';
+import { HandleLoginApi } from '../../services/userService';
 
 
 
@@ -15,7 +16,8 @@ class Login extends Component {
         this.state = {
             username: "",
             password: "",
-            isShowpassword :true,
+            isShowpassword: true,
+            errMessage:"",
         }
        
     }
@@ -31,8 +33,30 @@ class Login extends Component {
         })
         // console.log(event.target.value)
     }
-    HandleLogin = () => {
-        console.log("username:" ,this.state.username,'password: ' ,this.state.password)
+    HandleLogin = async () => {
+        this.setState({
+            errMessage : ""
+        })
+        try {
+            let data = await HandleLoginApi(this.state.username, this.state.password);
+            if (data && data.errCode !==0) {
+                this.setState({
+                    errMessage : data.message
+                })
+            } if (data && data.errCode === 0) {
+                this.props.userLoginSuccess(data.user)
+                console.log("succeeds")
+            }
+        } catch (error) {
+            if (error.response.data) {
+                if (error.response) {
+                    this.setState({
+                    errMessage: error.response.data.message
+                })
+                }
+            }
+            console.log(" data:" , error.response )
+        }
     }
     HandleShowHidePassword = () => {
         this.setState({
@@ -68,6 +92,9 @@ class Login extends Component {
                                <span onClick={()=>this.HandleShowHidePassword()} > {this.state.isShowpassword ?<i className="far fa-eye"></i>:<i className="fas fa-eye-slash"></i>}</span> 
                             
                         </div>
+                        <div className='col-12' style={{ color:"red"}}>
+                            {this.state.errMessage}
+                        </div>
                         <div className='col-12' >
                             <button className='btn-login' onClick={()=>{this.HandleLogin()}}>login</button>
                         </div>
@@ -98,8 +125,8 @@ const mapStateToProps = state => {
 const mapDispatchToProps = dispatch => {
     return {
         navigate: (path) => dispatch(push(path)),
-        adminLoginSuccess: (adminInfo) => dispatch(actions.adminLoginSuccess(adminInfo)),
-        adminLoginFail: () => dispatch(actions.adminLoginFail()),
+        // userLoginFail: () => dispatch(actions.userLoginFail()),
+        userLoginSuccess : (userInfo)=> dispatch(actions.userLoginSuccess(userInfo)),
     };
 };
 
