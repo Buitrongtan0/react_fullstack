@@ -16,7 +16,7 @@ class Login extends Component {
         this.state = {
             username: "",
             password: "",
-            isShowpassword: true,
+            isShowpassword: false,
             errMessage:"",
         }
        
